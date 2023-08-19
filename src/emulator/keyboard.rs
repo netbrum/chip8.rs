@@ -1,4 +1,4 @@
-use sdl2::{keyboard::Keycode, EventPump, Sdl};
+use sdl2::{keyboard::Keycode, EventPump};
 
 pub struct Keyboard {
     pub keys: [bool; 16],
