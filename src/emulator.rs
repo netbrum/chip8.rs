@@ -133,7 +133,7 @@ impl Emulator {
                 }
             }
             // 5xy0 - SE Vx, Vy
-            (0x5, _, _, _) => {
+            (0x5, _, _, 0x0) => {
                 if self.v_registers[x] == self.v_registers[y] {
                     self.program_counter += 2;
                 }
