@@ -219,6 +219,38 @@ impl Emulator {
                     self.program_counter -= 2;
                 }
             }
+            (0xF, _, 0x1, 0x5) => {
+                self.delay_timer = self.v_registers[x];
+            }
+            (0xF, _, 0x1, 0x8) => {
+                self.sound_timer = self.v_registers[x];
+            }
+            (0xF, _, 0x1, 0xE) => {
+                self.index_register += self.v_registers[x] as usize;
+            }
+            (0xF, _, 0x2, 0x9) => {
+                self.index_register = (self.v_registers[x] as usize) * 5;
+            }
+            (0xF, _, 0x3, 0x3) => {
+                let value = self.v_registers[x] as f32;
+                self.memory[self.index_register] = (value / 100.0 % 10.0).floor() as u8;
+                self.memory[self.index_register + 1] = (value / 10.0 % 10.0).floor() as u8;
+                self.memory[self.index_register + 2] = (value % 10.0) as u8
+            }
+            (0xF, _, 0x5, 0x5) => {
+                let x = self.v_registers[x] as usize;
+
+                for (index, v) in self.v_registers[..=x].iter().enumerate() {
+                    self.memory[self.index_register + index] = *v;
+                }
+            }
+            (0xF, _, 0x6, 0x5) => {
+                let x = self.v_registers[x] as usize;
+
+                for (index, v) in self.memory[self.index_register..=x].iter().enumerate() {
+                    self.v_registers[index] = *v;
+                }
+            }
             _ => unimplemented!("opcode {:b}", opcode),
         }
     }
