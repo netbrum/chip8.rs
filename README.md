@@ -1,6 +1,6 @@
 [specification]: http://devernay.free.fr/hacks/chip8/C8TECH10.HTM
 [book]: https://aquova.net/chip8/chip8.pdf
-[test]: https://github.com/Skosulor/c8int/tree/master/test
+[test]: https://github.com/corax89/chip8-test-rom
 [roms]: https://www.zophar.net/pdroms/chip8/chip-8-games-pack.html
 
 ## Just a quick word
@@ -15,5 +15,5 @@ cargo run path/to/rom
 **Resources**
 - [Technical specification by Cowgod][specification]
 - [Chip8 book by aquova][book]
-- [Binary for debugging by Skosulor][test]
+- [Binary for debugging by corax89][test]
 - [Public domain games][roms]
