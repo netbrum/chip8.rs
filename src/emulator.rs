@@ -59,11 +59,10 @@ impl Emulator {
     }
     pub fn tick(&mut self) {
         let opcode = self.fetch();
-        self.tick_timers();
         self.execute(opcode);
     }
 
-    fn tick_timers(&mut self) {
+    pub fn tick_timers(&mut self) {
         if self.delay_timer > 0 {
             self.delay_timer -= 1;
         }
@@ -303,7 +302,7 @@ impl Emulator {
                     self.v_registers[index] = *v;
                 }
             }
-            _ => unimplemented!("opcode {:b}", opcode),
+            _ => unimplemented!("opcode {:b} {:?}", opcode, nibbles),
         }
     }
 }
