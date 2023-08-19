@@ -49,3 +49,42 @@ impl Keyboard {
         self.keys = emulator_keys;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_is_empty() {
+        let keyboard = Keyboard::new();
+
+        assert_eq!(keyboard.keys, [false; 16]);
+    }
+
+    #[test]
+    fn key_matches() {
+        let k = Keyboard::key_to_hex;
+        assert_eq!(k(&Keycode::Num1).unwrap(), 0x1);
+        assert_eq!(k(&Keycode::Num2).unwrap(), 0x2);
+        assert_eq!(k(&Keycode::Num3).unwrap(), 0x3);
+        assert_eq!(k(&Keycode::Num4).unwrap(), 0xC);
+        assert_eq!(k(&Keycode::Q).unwrap(), 0x4);
+        assert_eq!(k(&Keycode::W).unwrap(), 0x5);
+        assert_eq!(k(&Keycode::E).unwrap(), 0x6);
+        assert_eq!(k(&Keycode::R).unwrap(), 0xD);
+        assert_eq!(k(&Keycode::A).unwrap(), 0x7);
+        assert_eq!(k(&Keycode::S).unwrap(), 0x8);
+        assert_eq!(k(&Keycode::D).unwrap(), 0x9);
+        assert_eq!(k(&Keycode::F).unwrap(), 0xE);
+        assert_eq!(k(&Keycode::Z).unwrap(), 0xA);
+        assert_eq!(k(&Keycode::X).unwrap(), 0x0);
+        assert_eq!(k(&Keycode::C).unwrap(), 0xB);
+        assert_eq!(k(&Keycode::V).unwrap(), 0xF);
+    }
+
+    #[test]
+    fn key_doesnt_matchb() {
+        let k = Keyboard::key_to_hex;
+        assert!(k(&Keycode::P).is_none());
+    }
+}
