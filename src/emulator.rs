@@ -102,14 +102,18 @@ impl Emulator {
         let byte = (opcode & 0xFF) as u8;
 
         match nibbles {
+            // 00E0 - CLS
             (0x0, 0x0, 0xE, 0x0) => self.display.clear(),
+            // 00EE - RET
             (0x0, 0x0, 0xE, 0xE) => {
                 self.program_counter = self.stack[self.stack_pointer];
                 self.stack_pointer -= 1;
             }
+            // 1nnn - JP addr
             (0x1, _, _, _) => {
                 self.program_counter = addr;
             }
+            // 2nnn - CALL addr
             (0x2, _, _, _) => {
                 self.stack_pointer += 1;
 
@@ -117,39 +121,49 @@ impl Emulator {
 
                 self.program_counter = addr;
             }
+            // 3xkk - SE Vx, byte
             (0x3, _, _, _) => {
                 if self.v_registers[x] == byte {
                     self.program_counter += 2;
                 }
             }
+            // 4xkk - SNE Vx, byte
             (0x4, _, _, _) => {
                 if self.v_registers[x] != byte {
                     self.program_counter += 2;
                 }
             }
+            // 5xy0 - SE Vx, Vy
             (0x5, _, _, _) => {
                 if self.v_registers[x] == self.v_registers[y] {
                     self.program_counter += 2;
                 }
             }
+            // 6xkk - LD Vx, byte
             (0x6, _, _, _) => {
                 self.v_registers[x] = byte;
             }
+            // 7xkk - ADD Vx, byte
             (0x7, _, _, _) => {
                 self.v_registers[x] += byte;
             }
+            // 8xy0 - LD Vx, Vy
             (0x8, _, _, 0x0) => {
                 self.v_registers[x] = self.v_registers[y];
             }
+            // 8xy1 - OR Vx, Vy
             (0x8, _, _, 0x1) => {
                 self.v_registers[x] |= self.v_registers[y];
             }
+            // 8xy2 - AND Vx, Vy
             (0x8, _, _, 0x2) => {
                 self.v_registers[x] &= self.v_registers[y];
             }
+            // 8xy3 - XOR Vx, Vy
             (0x8, _, _, 0x3) => {
                 self.v_registers[x] ^= self.v_registers[y];
             }
+            // 8xy4 - ADD Vx, Vy
             (0x8, _, _, 0x4) => {
                 let vx = self.v_registers[x] as u16;
                 let vy = self.v_registers[y] as u16;
@@ -158,6 +172,7 @@ impl Emulator {
                 self.v_registers[x] = result as u8;
                 self.v_registers[0xF] = if result > 0xFF { 1 } else { 0 };
             }
+            // 8xy5 - SUB Vx, Vy
             (0x8, _, _, 0x5) => {
                 self.v_registers[0xF] = if self.v_registers[x] > self.v_registers[y] {
                     1
@@ -167,10 +182,12 @@ impl Emulator {
 
                 self.v_registers[x] = self.v_registers[x].wrapping_sub(self.v_registers[y]);
             }
+            // 8xy6 - SHR Vx {, Vy}
             (0x8, _, _, 0x6) => {
                 self.v_registers[0xF] = self.v_registers[x] & 1;
                 self.v_registers[x] >>= 1;
             }
+            // 8xy7 - SUBN Vx, Vy
             (0x8, _, _, 0x7) => {
                 self.v_registers[0xF] = if self.v_registers[y] > self.v_registers[x] {
                     1
@@ -180,24 +197,30 @@ impl Emulator {
 
                 self.v_registers[x] = self.v_registers[y].wrapping_sub(self.v_registers[x]);
             }
+            // 8xyE - SHL Vx {, Vy}
             (0x8, _, _, 0xE) => {
                 self.v_registers[0xF] = self.v_registers[x] >> 7;
                 self.v_registers[x] <<= 1;
             }
+            // 9xy0 - SNE Vx, Vy
             (0x9, _, _, 0x0) => {
                 if self.v_registers[x] != self.v_registers[y] {
                     self.program_counter += 2;
                 }
             }
+            // Annn - LD I, addr
             (0xA, _, _, _) => {
                 self.index_register = addr;
             }
+            // Bnnn - JP V0, addr
             (0xB, _, _, _) => {
                 self.program_counter = addr.wrapping_add(self.v_registers[0].into());
             }
+            // Cxkk - RND Vx, byte
             (0xC, _, _, _) => {
                 self.v_registers[x] = rand::thread_rng().gen_range(0..=255) & byte;
             }
+            // Dxyn - DRW Vx, Vy, nibble
             (0xD, _, _, n) => {
                 let sprite = &self.memory[self.index_register..(self.index_register + n as usize)];
 
@@ -206,21 +229,25 @@ impl Emulator {
 
                 self.v_registers[0xF] = self.display.draw(display::Point { x, y }, sprite) as u8;
             }
+            // Ex9E - SKP Vx
             (0xE, _, 0x9, 0xE) => {
                 let key = self.v_registers[x];
                 if self.keyboard.keys[key as usize] {
                     self.program_counter += 2;
                 }
             }
+            // ExA1 - SKNP Vx
             (0xE, _, 0xA, 0x1) => {
                 let key = self.v_registers[x];
                 if !self.keyboard.keys[key as usize] {
                     self.program_counter += 2;
                 }
             }
+            // Fx07 - LD Vx, DT
             (0xF, _, 0x0, 0x7) => {
                 self.v_registers[x] = self.delay_timer;
             }
+            // Fx0A - LD Vx, K
             (0xF, _, 0x0, 0xA) => {
                 let mut pressed = false;
 
@@ -237,24 +264,30 @@ impl Emulator {
                     self.program_counter -= 2;
                 }
             }
+            // Fx15 - LD DT, Vx
             (0xF, _, 0x1, 0x5) => {
                 self.delay_timer = self.v_registers[x];
             }
+            // Fx18 - LD ST, Vx
             (0xF, _, 0x1, 0x8) => {
                 self.sound_timer = self.v_registers[x];
             }
+            // Fx1E - ADD I, Vx
             (0xF, _, 0x1, 0xE) => {
                 self.index_register += self.v_registers[x] as usize;
             }
+            // Fx29 - LD F, Vx
             (0xF, _, 0x2, 0x9) => {
                 self.index_register = (self.v_registers[x] as usize) * 5;
             }
+            // Fx33 - LD B, Vx
             (0xF, _, 0x3, 0x3) => {
                 let value = self.v_registers[x] as f32;
                 self.memory[self.index_register] = (value / 100.0 % 10.0).floor() as u8;
                 self.memory[self.index_register + 1] = (value / 10.0 % 10.0).floor() as u8;
                 self.memory[self.index_register + 2] = (value % 10.0) as u8
             }
+            // Fx55 - LD [I], Vx
             (0xF, _, 0x5, 0x5) => {
                 let x = self.v_registers[x] as usize;
 
@@ -262,6 +295,7 @@ impl Emulator {
                     self.memory[self.index_register + index] = *v;
                 }
             }
+            // Fx65 - LD Vx, [I]
             (0xF, _, 0x6, 0x5) => {
                 let x = self.v_registers[x] as usize;
 
