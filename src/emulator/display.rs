@@ -7,7 +7,7 @@ pub struct Point {
 }
 
 pub struct Display {
-    screen: [[bool; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
+    pub screen: [[bool; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
 }
 
 impl Display {
