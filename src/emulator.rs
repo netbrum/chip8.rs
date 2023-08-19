@@ -57,6 +57,11 @@ impl Emulator {
     pub fn load_rom(&mut self, buffer: &[u8]) {
         self.memory[FONTSET_SIZE..(FONTSET_SIZE + buffer.len())].copy_from_slice(buffer);
     }
+    pub fn tick(&mut self) {
+        let opcode = self.fetch();
+        self.tick_timers();
+        self.execute(opcode);
+    }
 
     fn tick_timers(&mut self) {
         if self.delay_timer > 0 {
@@ -64,8 +69,21 @@ impl Emulator {
         }
 
         if self.sound_timer > 0 {
+            if self.sound_timer == 1 {
+                // beep
+            }
             self.sound_timer -= 1;
         }
+    }
+
+    fn fetch(&mut self) -> u16 {
+        let higher_byte = self.memory[self.program_counter] as u16;
+        let lower_byte = self.memory[self.program_counter + 1] as u16;
+
+        let opcode = (higher_byte << 8) | lower_byte;
+        self.program_counter += 2;
+
+        opcode
     }
 
     fn execute(&mut self, opcode: u16) {
