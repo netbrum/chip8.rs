@@ -11,9 +11,9 @@ const REGISTER_SIZE: usize = 16;
 const MEMORY_SIZE: usize = 4096;
 const START_ADDRESS: usize = 512;
 
-const FONT_SIZE: usize = 16 * 5;
+const FONTSET_SIZE: usize = 16 * 5;
 
-const FONTSET: [u8; FONT_SIZE] = [
+const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, 0x20, 0x60, 0x20, 0x20, 0x70, 0xF0, 0x10, 0xF0, 0x80, 0xF0, 0xF0,
     0x10, 0xF0, 0x10, 0xF0, 0x90, 0x90, 0xF0, 0x10, 0x10, 0xF0, 0x80, 0xF0, 0x10, 0xF0, 0xF0, 0x80,
     0xF0, 0x90, 0xF0, 0xF0, 0x10, 0x20, 0x40, 0x40, 0xF0, 0x90, 0xF0, 0x90, 0xF0, 0xF0, 0x90, 0xF0,
@@ -49,13 +49,13 @@ impl Emulator {
             keyboard: Keyboard::new(),
         };
 
-        emulator.memory[..FONT_SIZE].copy_from_slice(&FONTSET);
+        emulator.memory[..FONTSET_SIZE].copy_from_slice(&FONTSET);
 
         emulator
     }
 
     pub fn load_rom(&mut self, buffer: &[u8]) {
-        self.memory[FONT_SIZE..(FONT_SIZE + buffer.len())].copy_from_slice(buffer);
+        self.memory[FONTSET_SIZE..(FONTSET_SIZE + buffer.len())].copy_from_slice(buffer);
     }
 
     fn tick_timers(&mut self) {
