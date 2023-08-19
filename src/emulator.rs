@@ -55,7 +55,7 @@ impl Emulator {
     }
 
     pub fn load_rom(&mut self, buffer: &[u8]) {
-        self.memory[FONTSET_SIZE..(FONTSET_SIZE + buffer.len())].copy_from_slice(buffer);
+        self.memory[START_ADDRESS..(START_ADDRESS + buffer.len())].copy_from_slice(buffer);
     }
     pub fn tick(&mut self) {
         let opcode = self.fetch();
@@ -96,7 +96,7 @@ impl Emulator {
         let addr = (opcode & 0xFFF) as usize;
 
         let x = nibbles.1 as usize;
-        let y = nibbles.3 as usize;
+        let y = nibbles.2 as usize;
 
         let byte = (opcode & 0xFF) as u8;
 
@@ -144,7 +144,7 @@ impl Emulator {
             }
             // 7xkk - ADD Vx, byte
             (0x7, _, _, _) => {
-                self.v_registers[x] += byte;
+                self.v_registers[x] = self.v_registers[x].wrapping_add(byte);
             }
             // 8xy0 - LD Vx, Vy
             (0x8, _, _, 0x0) => {
@@ -288,21 +288,19 @@ impl Emulator {
             }
             // Fx55 - LD [I], Vx
             (0xF, _, 0x5, 0x5) => {
-                let x = self.v_registers[x] as usize;
-
                 for (index, v) in self.v_registers[..=x].iter().enumerate() {
                     self.memory[self.index_register + index] = *v;
                 }
             }
             // Fx65 - LD Vx, [I]
             (0xF, _, 0x6, 0x5) => {
-                let x = self.v_registers[x] as usize;
+                let memory_range = &self.memory[self.index_register..=(x + self.index_register)];
 
-                for (index, v) in self.memory[self.index_register..=x].iter().enumerate() {
+                for (index, v) in memory_range.iter().enumerate() {
                     self.v_registers[index] = *v;
                 }
             }
-            _ => unimplemented!("opcode {:b} {:?}", opcode, nibbles),
+            _ => unimplemented!("opcode {:b} {:?} {}", opcode, nibbles, self.program_counter),
         }
     }
 }
