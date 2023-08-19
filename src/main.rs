@@ -25,13 +25,13 @@ fn main() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() != 2 {
-        println!("Usage: path/to/rom");
+        println!("Usage: cargo run path/to/rom");
         process::exit(1);
     }
 
     let mut emulator = Emulator::new();
 
-    match get_rom(args) {
+    match read_rom(&args[1]) {
         Ok(rom) => emulator.load_rom(&rom),
         Err(err) => panic!("{err}"),
     }
@@ -99,8 +99,8 @@ fn draw_screen(emulator: &Emulator, canvas: &mut Canvas<Window>) {
     canvas.present();
 }
 
-fn get_rom(args: Vec<String>) -> Result<Vec<u8>, io::Error> {
-    let mut rom = File::open(&args[1])?;
+fn read_rom(file: &String) -> Result<Vec<u8>, io::Error> {
+    let mut rom = File::open(file)?;
     let mut buffer = Vec::new();
 
     rom.read_to_end(&mut buffer)?;
