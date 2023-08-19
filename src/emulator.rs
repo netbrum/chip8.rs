@@ -105,8 +105,7 @@ impl Emulator {
             (0x0, 0x0, 0xE, 0x0) => self.display.clear(),
             // 00EE - RET
             (0x0, 0x0, 0xE, 0xE) => {
-                self.program_counter = self.stack[self.stack_pointer];
-                self.stack_pointer -= 1;
+                self.program_counter = self.pop();
             }
             // 1nnn - JP addr
             (0x1, _, _, _) => {
@@ -114,9 +113,7 @@ impl Emulator {
             }
             // 2nnn - CALL addr
             (0x2, _, _, _) => {
-                self.stack_pointer += 1;
-
-                self.stack[self.stack_pointer] = self.program_counter;
+                self.push(self.program_counter);
 
                 self.program_counter = addr;
             }
@@ -302,5 +299,15 @@ impl Emulator {
             }
             _ => unimplemented!("opcode {:b} {:?} {}", opcode, nibbles, self.program_counter),
         }
+    }
+
+    fn pop(&mut self) -> usize {
+        self.stack_pointer -= 1;
+        self.stack[self.stack_pointer]
+    }
+
+    fn push(&mut self, value: usize) {
+        self.stack[self.stack_pointer] = value;
+        self.stack_pointer += 1;
     }
 }
