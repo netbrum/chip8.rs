@@ -1,9 +1,9 @@
 mod emulator;
 
-use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use sdl2::{pixels::Color, Sdl};
 
 use emulator::{display, Emulator};
 use sdl2::event::Event;
@@ -31,28 +31,14 @@ fn main() -> Result<(), String> {
 
     let mut emulator = Emulator::new();
 
+    let sdl_context = sdl2::init()?;
+    let mut event_pump = sdl_context.event_pump()?;
+    let mut canvas = init_canvas(&sdl_context)?;
+
     match read_rom(&args[1]) {
         Ok(rom) => emulator.load_rom(&rom),
         Err(err) => panic!("{err}"),
     }
-
-    let sdl_context = sdl2::init()?;
-    let mut event_pump = sdl_context.event_pump()?;
-    let video_subsystem = sdl_context.video()?;
-    let window = video_subsystem
-        .window("chip8.rs", WINDOW_WIDTH, WINDOW_HEIGHT)
-        .position_centered()
-        .opengl()
-        .build()
-        .expect("to build window");
-
-    let mut canvas = window
-        .into_canvas()
-        .present_vsync()
-        .build()
-        .expect("to build canvas");
-
-    canvas.present();
 
     'main: loop {
         // Quit on ctrl-c
@@ -73,6 +59,26 @@ fn main() -> Result<(), String> {
     }
 
     Ok(())
+}
+
+fn init_canvas(sdl_context: &Sdl) -> Result<Canvas<Window>, String> {
+    let video_subsystem = sdl_context.video()?;
+    let window = video_subsystem
+        .window("chip8.rs", WINDOW_WIDTH, WINDOW_HEIGHT)
+        .position_centered()
+        .opengl()
+        .build()
+        .expect("to build window");
+
+    let mut canvas = window
+        .into_canvas()
+        .present_vsync()
+        .build()
+        .expect("to build canvas");
+
+    canvas.present();
+
+    Ok(canvas)
 }
 
 fn draw_screen(emulator: &Emulator, canvas: &mut Canvas<Window>) {
