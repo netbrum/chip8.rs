@@ -35,7 +35,7 @@ pub struct Emulator {
 }
 
 impl Emulator {
-    pub fn new() -> Emulator {
+    pub fn new() -> Self {
         let mut emulator = Emulator {
             memory: [0; MEMORY_SIZE],
             v_registers: [0; REGISTER_SIZE],
